@@ -1,0 +1,8 @@
+{
+    "hide_binary": true,
+    "ports": [
+        {"protocol": "tcp", "port": 80},
+        {"protocol": "tcp", "port": 81},
+        {"protocol": "tcp", "port": 8080}
+    ]
+}
