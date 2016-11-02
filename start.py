@@ -95,9 +95,9 @@ class ServerManager(object):
                 time.sleep(2) 
         except KeyboardInterrupt:
             print("\nShutting down...")
-            for server in self._servers:
-                server.stop()
-                server.join()
+            # for server in self._servers:
+            #     server.stop()
+            #     server.join()
             sys.exit(0)
 
     def drop_privileges(self):
