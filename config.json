@@ -1,8 +1,21 @@
 {
-    "hide_binary": true,
+    "loggers": {
+        "elasticsearch": {
+            "active": true,
+            "config": {
+                "server": "http://searchme:thisisatest!@172.16.1.174:8787"
+            }
+        }, 
+        "file": {
+            "active": true
+        }
+    },
     "ports": [
         {"protocol": "tcp", "port": 80},
         {"protocol": "tcp", "port": 81},
         {"protocol": "tcp", "port": 8080}
+    ],
+    "ignore_watch": [
+        "172.16.1.174"
     ]
 }

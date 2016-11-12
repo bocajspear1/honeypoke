@@ -11,6 +11,9 @@ import signal
 import threading
 import datetime
 
+from loggers.elasticsearch_logger import ElasticSearchLogger
+from loggers.file_logger import FileLogger
+
 from lib.watcher import HoneyPokeWatcher
 
 if sys.version_info.major == 2:
@@ -29,6 +32,23 @@ class ServerManager(object):
         self._config = config
         self._lock = threading.Lock()
         self._miss_lock = threading.Lock()
+        self.__loggers = []
+        self.setup_loggers()
+
+    def setup_loggers(self):
+        valid_loggers = ['elasticsearch', 'file']
+        for item in self._config['loggers']:
+            if item == 'elasticsearch':
+                self.__loggers.append(ElasticSearchLogger(self._config['loggers'][item]['config']))
+            elif item == "file":
+                self.__loggers.append(FileLogger())
+            else:
+                print("Invalid logger")
+                sys.exit(1)
+
+        if len(self.__loggers) == 0:
+            print("No loggers configured")
+            sys.exit(1)
 
     # Used by HoneyPokeWatcher to see if a port has a server or not
     # If not, we record it and indicate we have seen it
@@ -61,8 +81,8 @@ class ServerManager(object):
             self._udp_ports.append(port)
         self._lock.release()
 
-    def add_server(self, port, protocol, queue):
-        server = PyHoneyPokeServer(port, protocol, queue)
+    def add_server(self, port, protocol, loggers, queue):
+        server = PyHoneyPokeServer(port, protocol, loggers, queue)
         self.add_port(port, protocol)
         server.start()
         self._servers.append(server)
@@ -70,7 +90,7 @@ class ServerManager(object):
     def start_servers(self):
 
         # Start watching for port misses
-        watch = HoneyPokeWatcher(self.check_server)
+        watch = HoneyPokeWatcher(self._config['ignore_watch'], self.check_server)
         watch.start()
 
         # Prepare to start the servers
@@ -80,7 +100,7 @@ class ServerManager(object):
 
         # Add servers
         for port in self._config['ports']:
-            self.add_server(int(port['port']), port['protocol'], wait)
+            self.add_server(int(port['port']), port['protocol'], self.__loggers, wait)
 
         # Wait until they indicate they have bound
         while not wait.full():
@@ -124,7 +144,7 @@ if not os.path.exists(config_file):
 config_data = open(config_file, "r").read()
 config = json.loads(config_data)
 
-if "hide_binary" not in config or "ports" not in config:
+if "loggers" not in config or "ports" not in config or "ignore_watch" not in config:
     print("Invalid config")
     sys.exit(1)
 

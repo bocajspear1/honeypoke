@@ -1,6 +1,8 @@
 import os
-import datetime
 import threading
+import time
+import hashlib
+
 
 
 class HoneyPokeServer(threading.Thread):
@@ -9,17 +11,21 @@ class HoneyPokeServer(threading.Thread):
         threading.Thread.__init__(self)
         self._port = port
         self._protocol = protocol
-        self._log_path = "./logs/port-" + self._protocol + "-" + str(self._port) + ".log"
         self.daemon = True
         self._queue = queue
 
-    def write_input(self, remote_host, remote_port, data):
-        output_file = open(self._log_path, "a")
-        now = datetime.datetime.now().isoformat()
-        output_file.write(now + " - From {}:{} - {}\n".format(remote_host, remote_port, data))
-        output_file.close()
 
     def ready(self):
         self._queue.put(True)
 
+    def save_large(self, data):
+        m = hashlib.md5()
+        m.update(data)
+        output_filename = "./large/" + str(time.time()) + "-" + m.hexdigest() + ".large"
+
+        out_file = open(output_filename, "wb")
+        out_file.write(data)
+        out_file.close()
+
+        return output_filename
 

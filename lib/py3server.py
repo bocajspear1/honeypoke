@@ -7,41 +7,61 @@ import os
 class TCPHandler(socketserver.StreamRequestHandler):
 
     def handle(self):
-        if os.geteuid() != 0 and os.getegid() != 0:
-            while True:
-                data = self.rfile.readline().strip()
-
-                port = self.server.server_address[1]
-
-                decoded_data = ""
-                try:
-                    decoded_data = data.decode('utf-8')
-                except UnicodeDecodeError:
-                    decoded_data = "(BINARY DATA)"
-
-                if decoded_data != "":
-                    self.server.on_handle(self.client_address, decoded_data)
-                # server.write_input(server.get_log_path(port, "tcp"), self.client_address, data)
-        else:
+        if os.geteuid() == 0 or os.getegid() == 0:
             print("Permissions not dropped")
+            return
+
+        # print(dir(self.connection))
+        full_data = b""
+        try:
+            data = self.rfile.readline()
+            failsafe = False
+            while data != b"" and failsafe == False:
+                full_data += data
+                data = self.rfile.readline()
+
+                # Fail safe, don't got over 100M
+                if len(full_data) > 104857600:
+                    print("failsafe hit!")
+                    failsafe = True
+
+            port = self.server.server_address[1]
+
+            decoded_data = ""
+            try:
+                decoded_data = full_data.decode('utf-8')
+                self.server.on_handle(self.client_address, decoded_data, False)
+            except UnicodeDecodeError:
+                decoded_data = full_data
+                self.server.on_handle(self.client_address, decoded_data, True)
+        except ConnectionResetError:
+            self.server.on_handle(self.client_address, "--SCAN--", False)
+
+           
 
 class UDPHandler(socketserver.BaseRequestHandler):
 
     def handle(self):
-        if os.geteuid() != 0 and os.getegid() != 0:
-            data = self.request[0].strip()
-            port = self.server.server_address[1]
-            self.server.on_handle(self.client_address, data.decode('utf-8'))
-            # server.write_input(server.get_log_path(port, "udp"), )
-        else:
+        if os.geteuid() == 0 or os.getegid() == 0:
             print("Permissions not dropped")
-        
+            return
+
+        data = self.request[0].strip()
+        port = self.server.server_address[1]
+
+        try:
+            decoded_data = data.decode('utf-8')
+            self.server.on_handle(self.client_address, decoded_data, False)
+        except UnicodeDecodeError:
+            self.server.on_handle(self.client_address, data, True)
+
 
 class Py3HoneyPokeServer(HoneyPokeServer):
 
-    def __init__(self, port, protocol, queue):
+    def __init__(self, port, protocol, loggers, queue):
         super(Py3HoneyPokeServer, self).__init__(port, protocol, queue)
         self._server = None
+        self._loggers = loggers
 
     def stop(self):
         if self._server != None:
@@ -77,5 +97,13 @@ class Py3HoneyPokeServer(HoneyPokeServer):
         else:
             print("Invalid protocol")
             
-    def on_handle(self, client_ip, data):
-        self.write_input(client_ip[0], client_ip[1], data)
+    def on_handle(self, client_ip, data, is_binary):
+
+        if len(data) > 2048 or is_binary:
+            large_file = self.save_large(data)
+            data = "Output saved at " + large_file
+            print(data)
+
+        for logger in self._loggers:
+            logger.log(client_ip[0], client_ip[1], self._protocol, self._port, data, is_binary)
+        # self.write_input(client_ip[0], client_ip[1], data)
