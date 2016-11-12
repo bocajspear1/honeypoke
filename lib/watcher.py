@@ -14,15 +14,18 @@ class HoneyPokeWatcher(threading.Thread):
         
 
     def is_incoming(self, packet):
-        if IP in packet:
-            for iface in netifaces.interfaces():
-                address_list = netifaces.ifaddresses(iface)
-                ipv4_addresses = address_list[netifaces.AF_INET]
+        try:
+            if IP in packet:
+                for iface in netifaces.interfaces():
+                    address_list = netifaces.ifaddresses(iface)
+                    ipv4_addresses = address_list[netifaces.AF_INET]
 
-                for addr in ipv4_addresses:
-                    if str(packet[IP].dst) == addr['addr'] and str(packet[IP].src) not in self._ignore_list:
-                        return True
-        
+                    for addr in ipv4_addresses:
+                        if str(packet[IP].dst) == addr['addr'] and str(packet[IP].src) not in self._ignore_list:
+                            return True
+        except:
+            pass
+            
         return False
 
     def check_port(self, packet):

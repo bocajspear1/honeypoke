@@ -108,7 +108,6 @@ class ServerManager(object):
 
         # Wait until they indicate they have bound
         while not wait.full():
-            print(str(len(wait)) + " servers active out of " + str(server_count))
             pass
 
         # Drop privileges
