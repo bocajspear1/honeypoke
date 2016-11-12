@@ -3,7 +3,8 @@
         "elasticsearch": {
             "active": false,
             "config": {
-                "server": "http://USERNAME:PASSWORD@ES_ADDRESS:PORT"
+                "server": "http://USERNAME:PASSWORD@ES_ADDRESS:PORT",
+                "verify": false
             }
         }, 
         "file": {
