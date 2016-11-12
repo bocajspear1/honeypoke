@@ -20,9 +20,9 @@ HoneyPoke supports both Python2 and Python 3.
 
 ## Setup and Usage
 
-1. Copy `config.json.default` to `config.json` Modify the config file. 
+1. Copy `config.json.default`  to `config.json` Modify the config file. 
     * `loggers` enables and disables loggers. This done with the `active` key under the respective loggers. Some may need extra configuation, which is in the `config` key.
-    * The `ports` key sets the listeners that you will be creating. Each sets the protocol (`tcp` or `udp`), and the port.
+    * The `ports` key sets the listeners that you will be creating. Each sets the protocol (`tcp` or `udp`), and the port. `config.json.default` contains a curated list of ports. Modify as you want.
     * `ignore_watch` is used ignore connections that you create to particular systems. This is useful for things like ElasticSearch so that these connections are not recorded as missing ports.
     * `user` is the user you want the script to drop privileges to
     * `group` is the group you want the script to drop privileges to
@@ -31,6 +31,8 @@ HoneyPoke supports both Python2 and Python 3.
     * Python 3 `sudo python3 start.py --config config.json`
 
 **Note:** HoneyPoke is run using sudo (aka root). It will drop privileges though, and it will not process any connections until permissions are dropped. The script should report when privileges are dropped.
+
+**Note:** You can also use the `config.json.nmap` file, which contains all the common ports Nmap scans. Beware! Due to the number of ports, it takes awhile to start up.
 
 ## Binary and Large files
 

@@ -8,7 +8,7 @@ class TCPHandler(socketserver.StreamRequestHandler):
 
     def handle(self):
         if os.geteuid() == 0 or os.getegid() == 0:
-            print("Permissions not dropped")
+            # print("Permissions not dropped")
             return
 
         # print(dir(self.connection))
@@ -43,7 +43,7 @@ class UDPHandler(socketserver.BaseRequestHandler):
 
     def handle(self):
         if os.geteuid() == 0 or os.getegid() == 0:
-            print("Permissions not dropped")
+            # print("Permissions not dropped")
             return
 
         data = self.request[0].strip()

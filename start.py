@@ -38,6 +38,10 @@ class ServerManager(object):
     def setup_loggers(self):
         valid_loggers = ['elasticsearch', 'file']
         for item in self._config['loggers']:
+
+            if self._config['loggers'][item]['active'] == False:
+                continue
+
             if item == 'elasticsearch':
                 self.__loggers.append(ElasticSearchLogger(self._config['loggers'][item]['config']))
             elif item == "file":
@@ -55,7 +59,7 @@ class ServerManager(object):
     def check_server(self, port, protocol):
 
         if os.geteuid() == 0 or os.getegid() == 0:
-            print("Permissions not dropped")
+            print("Permissions have not been dropped")
             return 
 
         if protocol == "tcp" and port not in self._tcp_ports or protocol == "udp" and port not in self._udp_ports:
@@ -104,6 +108,7 @@ class ServerManager(object):
 
         # Wait until they indicate they have bound
         while not wait.full():
+            print(str(len(wait)) + " servers active out of " + str(server_count))
             pass
 
         # Drop privileges
