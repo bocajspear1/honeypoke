@@ -13,7 +13,10 @@ HoneyPoke supports both Python2 and Python 3.
 ## Installation
 
 1. Clone or download this repo
-2. Run `sudo pip -r requirements.txt` for your respective Python version. (You'll need `libpcap-dev` or its equivalent to install Scapy)
+2. Install dependencies (You'll need `libpcap-dev` or its equivalent to install Scapy, as well as the Python dev packages): 
+    * Python 2: `sudo pip -r requirements2.txt` 
+    * Python 3: `sudo pip3 -r requirements3.txt` 
+3. Be sure the `large` and `logs` directories are writeable by the user and group you plan to have HoneyPoke running under.
 
 ## Setup and Usage
 
