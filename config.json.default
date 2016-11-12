@@ -16,5 +16,7 @@
         {"protocol": "tcp", "port": 8080}
     ],
     "ignore_watch": [
-    ]
+    ],
+    "user": "nobody",
+    "group": "nogroup"
 }

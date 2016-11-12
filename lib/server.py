@@ -3,8 +3,7 @@ import threading
 import time
 import hashlib
 
-
-
+# Base class for servers
 class HoneyPokeServer(threading.Thread):
 
     def __init__(self, port, protocol, queue):
@@ -13,7 +12,6 @@ class HoneyPokeServer(threading.Thread):
         self._protocol = protocol
         self.daemon = True
         self._queue = queue
-
 
     def ready(self):
         self._queue.put(True)

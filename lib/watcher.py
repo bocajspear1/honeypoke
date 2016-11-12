@@ -19,7 +19,6 @@ class HoneyPokeWatcher(threading.Thread):
                 address_list = netifaces.ifaddresses(iface)
                 ipv4_addresses = address_list[netifaces.AF_INET]
 
-
                 for addr in ipv4_addresses:
                     if str(packet[IP].dst) == addr['addr'] and str(packet[IP].src) not in self._ignore_list:
                         return True

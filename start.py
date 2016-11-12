@@ -121,9 +121,9 @@ class ServerManager(object):
             sys.exit(0)
 
     def drop_privileges(self):
-        print("Dropping!")
-        nobody_uid = pwd.getpwnam('nobody').pw_uid
-        nobody_gid = grp.getgrnam('nogroup').gr_gid
+        print("NOTICE: Dropping Privileges!")
+        nobody_uid = pwd.getpwnam(self._config['user']).pw_uid
+        nobody_gid = grp.getgrnam(self._config['group']).gr_gid
 
         os.setgroups([])
 
@@ -144,9 +144,12 @@ if not os.path.exists(config_file):
 config_data = open(config_file, "r").read()
 config = json.loads(config_data)
 
-if "loggers" not in config or "ports" not in config or "ignore_watch" not in config:
-    print("Invalid config")
-    sys.exit(1)
+config_items = ['loggers', 'ignore_watch', 'user', 'group']
+
+for item in config_items:
+    if item not in config:
+        print("Invalid config, '" + item + "' key not found")
+        sys.exit(1)
 
 manager = ServerManager(config)
 manager.start_servers()
