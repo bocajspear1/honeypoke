@@ -1,5 +1,3 @@
-# Need libpcap-dev
-
 import time
 import sys
 import os
@@ -23,8 +21,7 @@ else:
     from lib.py3server import Py3HoneyPokeServer as PyHoneyPokeServer
     from queue import Queue
 
-# from pympler.tracker import SummaryTracker
-# tracker = SummaryTracker()
+VERSION = "v1.1"
 
 class ServerManager(object):
 
@@ -73,6 +70,7 @@ class ServerManager(object):
                 now = datetime.datetime.now().isoformat()
                 output_file.write(now + " - Missed {} port {}\n".format(protocol, port))
                 output_file.close()
+                
             except Exception as e:
                 print(e)
             finally:
@@ -127,7 +125,6 @@ class ServerManager(object):
             # for server in self._servers:
             #     server.stop()
             #     server.join()
-            # tracker.print_diff()
             sys.exit(0)
 
     def drop_privileges(self):
@@ -140,6 +137,7 @@ class ServerManager(object):
         os.setgid(nobody_uid)
         os.setuid(nobody_gid)
 
+print("\nWelcome to HoneyPoke " + VERSION + "\n\n")
 
 parser = argparse.ArgumentParser(description='Look at what attackers are poking around with')
 parser.add_argument('--config', help='Path to configuration file', required=True)

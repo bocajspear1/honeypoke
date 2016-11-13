@@ -30,6 +30,8 @@ HoneyPoke supports both Python2 and Python 3.
     * Python 2 `sudo python2 start.py --config config.json`
     * Python 3 `sudo python3 start.py --config config.json`
 
+**Note:** Be sure you have nothing listening on the selected ports, or else HoneyPoke will not fully start.
+
 **Note:** HoneyPoke is run using sudo (aka root). It will drop privileges though, and it will not process any connections until permissions are dropped. The script should report when privileges are dropped.
 
 **Note:** You can also use the `config.json.nmap` file, which contains all the common ports Nmap scans. Beware! Due to the number of ports, it takes awhile to start up.
@@ -37,6 +39,10 @@ HoneyPoke supports both Python2 and Python 3.
 ## Binary and Large files
 
 If HoneyPoke determines input is binary or too large, it will store the output into a file in the `large` directory. The location to the file is logged instead of the entire contents.
+
+## Missed ports
+
+Ports that have no listener are recorded in HoneyPoke in the `logs/missed.log` file. Use this is to modify your listeners with new ports.
 
 ## Contributing
 

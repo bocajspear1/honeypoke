@@ -1,5 +1,6 @@
 from elasticsearch import Elasticsearch
 import datetime
+import platform 
 
 class ElasticSearchLogger(object):
 
@@ -23,5 +24,6 @@ class ElasticSearchLogger(object):
             "protocol": protocol,
             "port": port,
             "input": str(data),
-            "is_binary": is_binary
+            "is_binary": is_binary,
+            "host": platform.node()
         })
