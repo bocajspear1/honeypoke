@@ -5,49 +5,55 @@ import errno
 import sys
 import traceback
 import os
+import socket
 
 class TCPHandler(SocketServer.StreamRequestHandler):
 
     def handle(self):
         
-        if os.geteuid() == 0 or os.getegid() == 0:
-            # print("Permissions not dropped")
-            return
-
-        self.request.settimeout(30)
-
         full_data = ""
+        port = self.server.server_address[1]
+
         try:
-            data = self.rfile.readline()
-            failsafe = False
-            while data != "" and failsafe == False:
-                full_data += data
-                data = self.rfile.readline()
-                
-                # Fail safe, don't got over 100M
-                if len(full_data) > 104857600:
-                    print("failsafe hit!")
-                    failsafe = True
+            if os.geteuid() == 0 or os.getegid() == 0:
+                # print("Permissions not dropped")
+                return
 
-            port = self.server.server_address[1]
-
-            binary = False
+            self.request.settimeout(60)
 
             try:
-                unicode(full_data)
-            except UnicodeDecodeError:
-                binary = True
+                data = self.rfile.readline()
+                failsafe = False
+                while data != "" and failsafe == False:
+                    full_data += data
+                    data = self.rfile.readline()
+                    
+                    # Fail safe, don't got over 100M
+                    if len(full_data) > 104857600:
+                        print("failsafe hit!")
+                        failsafe = True
+               
+            except SocketError as e:
+                if e.errno != errno.ECONNRESET:
+                    raise 
+                self.server.on_handle(self.client_address, "--SCAN--", False)
+                return
+        except socket.timeout:
+            print("Timeout!")
+            pass
 
-            if "\0" in full_data:
-                binary = True
-            
-            self.server.on_handle(self.client_address, full_data, binary)
-        except SocketError as e:
-            if e.errno != errno.ECONNRESET:
-                raise 
-            self.server.on_handle(self.client_address, "--SCAN--", False)
+        binary = False
+
+        try:
+            unicode(full_data)
+        except UnicodeDecodeError:
+            binary = True
+
+        if "\0" in full_data:
+            binary = True
         
-                
+        self.server.on_handle(self.client_address, full_data, binary) 
+
 class UDPHandler(SocketServer.BaseRequestHandler):
 
     def handle(self):

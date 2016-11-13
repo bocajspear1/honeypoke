@@ -3,42 +3,48 @@ from lib.server import HoneyPokeServer
 import sys
 import traceback
 import os
+import socket
 
 class TCPHandler(socketserver.StreamRequestHandler):
 
     def handle(self):
-        if os.geteuid() == 0 or os.getegid() == 0:
-            # print("Permissions not dropped")
-            return
 
-        self.request.settimeout(30)
-
+        self.request.settimeout(60)
         full_data = b""
+        port = self.server.server_address[1]
+
         try:
-            data = self.rfile.readline()
-            failsafe = False
-            while data != b"" and failsafe == False:
-                full_data += data
-                data = self.rfile.readline()
+            if os.geteuid() == 0 or os.getegid() == 0:
+                # print("Permissions not dropped")
+                return
 
-                # Fail safe, don't got over 100M
-                if len(full_data) > 104857600:
-                    print("failsafe hit!")
-                    failsafe = True
-
-            port = self.server.server_address[1]
-
-            decoded_data = ""
             try:
-                decoded_data = full_data.decode('utf-8')
-                self.server.on_handle(self.client_address, decoded_data, False)
-            except UnicodeDecodeError:
-                decoded_data = full_data
-                self.server.on_handle(self.client_address, decoded_data, True)
-        except ConnectionResetError:
-            self.server.on_handle(self.client_address, "--SCAN--", False)
+                data = self.rfile.readline()
+                failsafe = False
+                while data != b"" and failsafe == False:
+                    full_data += data
+                    data = self.rfile.readline()
 
+                    # Fail safe, don't got over 100M
+                    if len(full_data) > 104857600:
+                        print("failsafe hit!")
+                        failsafe = True
+
+            except ConnectionResetError:
+                self.server.on_handle(self.client_address, "--SCAN--", False)
+                return
+
+        except socket.timeout:
+            print("Timeout!")
+            pass
            
+        decoded_data = ""
+        try:
+            decoded_data = full_data.decode('utf-8')
+            self.server.on_handle(self.client_address, decoded_data, False)
+        except UnicodeDecodeError:
+            decoded_data = full_data
+            self.server.on_handle(self.client_address, decoded_data, True)
 
 class UDPHandler(socketserver.BaseRequestHandler):
 
