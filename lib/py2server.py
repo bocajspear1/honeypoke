@@ -14,6 +14,8 @@ class TCPHandler(SocketServer.StreamRequestHandler):
             # print("Permissions not dropped")
             return
 
+        self.request.settimeout(30)
+
         full_data = ""
         try:
             data = self.rfile.readline()
@@ -46,8 +48,6 @@ class TCPHandler(SocketServer.StreamRequestHandler):
             self.server.on_handle(self.client_address, "--SCAN--", False)
         
                 
-            
-
 class UDPHandler(SocketServer.BaseRequestHandler):
 
     def handle(self):

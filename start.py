@@ -23,6 +23,9 @@ else:
     from lib.py3server import Py3HoneyPokeServer as PyHoneyPokeServer
     from queue import Queue
 
+# from pympler.tracker import SummaryTracker
+# tracker = SummaryTracker()
+
 class ServerManager(object):
 
     def __init__(self, config):
@@ -110,6 +113,8 @@ class ServerManager(object):
         while not wait.full():
             pass
 
+        wait = None
+
         # Drop privileges
         self.drop_privileges()
 
@@ -122,6 +127,7 @@ class ServerManager(object):
             # for server in self._servers:
             #     server.stop()
             #     server.join()
+            # tracker.print_diff()
             sys.exit(0)
 
     def drop_privileges(self):

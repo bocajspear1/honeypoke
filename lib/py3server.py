@@ -11,7 +11,8 @@ class TCPHandler(socketserver.StreamRequestHandler):
             # print("Permissions not dropped")
             return
 
-        # print(dir(self.connection))
+        self.request.settimeout(30)
+
         full_data = b""
         try:
             data = self.rfile.readline()

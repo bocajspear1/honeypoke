@@ -1,4 +1,4 @@
-from elasticsearch import Elasticsearch, RequestsHttpConnection
+from elasticsearch import Elasticsearch
 import datetime
 
 class ElasticSearchLogger(object):
