@@ -16,10 +16,10 @@ class HoneyPokeServer(threading.Thread):
     def ready(self):
         self._queue.put(True)
 
-    def save_large(self, data):
+    def save_large(self, protocol, port, data):
         m = hashlib.md5()
         m.update(data)
-        output_filename = "./large/" + str(time.time()) + "-" + m.hexdigest() + ".large"
+        output_filename = "./large/" + protocol + "-" + str(port) +  "-" + str(time.time()) + "-" + m.hexdigest() + ".large"
 
         out_file = open(output_filename, "wb")
         out_file.write(data)
