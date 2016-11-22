@@ -1,5 +1,7 @@
 # HoneyPoke
 
+![HoneyPoke Logo](honeypoke.png)
+
 ## What is HoneyPoke?
 
 HoneyPoke is a Python application that shows you what attackers are poking around with. It sets up listeners on certain ports and records whatever is sent to it. 
