@@ -62,21 +62,39 @@ class ServerManager(object):
             print("Permissions have not been dropped")
             return 
 
+        # Check if we are already listening to that port
         if protocol == "tcp" and port not in self._tcp_ports or protocol == "udp" and port not in self._udp_ports:
-            print("Missed port: " + protocol + " " + str(port))
+            str_port = str(port)
+            print("Missed port: " + protocol + " " + str_port)
+
             self._miss_lock.acquire()
+
+            output_file = open("./logs/missed.json", "a+")
+            missed = output_file.read()
+            
             try:
-                output_file = open("./logs/missed.log", "a")
-                now = datetime.datetime.now().isoformat()
-                output_file.write(now + " - Missed {} port {}\n".format(protocol, port))
+                missed_obj = None
+                if missed.strip() == "":
+                    missed_obj = {
+                        "tcp": {},
+                        "udp": {}
+                    }
+                else:
+                    missed_obj = json.loads(missed)
+                
+                if str_port not in missed_obj[protocol]:
+                    missed_obj[protocol][str_port] = 0
+
+                missed_obj[protocol][str_port] += 1
+
+                output_file.truncate(0)
+                output_file.write(json.dumps(missed_obj, indent=4, sort_keys=True))
                 output_file.close()
                 
             except Exception as e:
                 print(e)
             finally:
                 self._miss_lock.release()
-
-            self.add_port(port, protocol)
 
     def add_port(self, port, protocol):
         self._lock.acquire()
@@ -95,7 +113,7 @@ class ServerManager(object):
     def start_servers(self):
 
         # Start watching for port misses
-        watch = HoneyPokeWatcher(self._config['ignore_watch'], self.check_server)
+        watch = HoneyPokeWatcher(self._config['ssh_port'], self._config['ignore_watch'], self.check_server)
         watch.start()
 
         # Prepare to start the servers
@@ -152,7 +170,7 @@ if not os.path.exists(config_file):
 config_data = open(config_file, "r").read()
 config = json.loads(config_data)
 
-config_items = ['loggers', 'ignore_watch', 'user', 'group']
+config_items = ['loggers', 'ignore_watch', 'ssh_port', 'user', 'group']
 
 for item in config_items:
     if item not in config:

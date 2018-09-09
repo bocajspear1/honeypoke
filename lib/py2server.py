@@ -117,7 +117,10 @@ class Py2HoneyPokeServer(HoneyPokeServer):
             
     def on_handle(self, client_ip, data, is_binary):
 
-        if len(data) > 2048 or is_binary:
+        if is_binary:
+            data = repr(bytes(data))
+
+        if len(data) > 512:
             large_file = self.save_large(self._protocol, self._port, data)
             data = "Output saved at " + large_file
             print(data)

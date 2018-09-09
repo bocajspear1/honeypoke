@@ -2,3 +2,4 @@ scapy-python3
 netifaces
 elasticsearch
 certifi
+maxminddb-geolite2

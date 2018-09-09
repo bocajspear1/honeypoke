@@ -2,3 +2,4 @@ scapy
 netifaces
 elasticsearch
 certifi
+maxminddb-geolite2

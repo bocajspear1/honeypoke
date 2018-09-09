@@ -6,11 +6,12 @@ import threading
 import netifaces
 
 class HoneyPokeWatcher(threading.Thread):
-    def __init__(self, ignore_list, check_server):
+    def __init__(self, ssh_port, ignore_addr, check_server):
         threading.Thread.__init__(self)
         self._check_server = check_server
         self.daemon = True
-        self._ignore_list = ignore_list
+        self._ignore_addr = ignore_addr
+        self._ssh_port = ssh_port
 
         self._addresses = []
 
@@ -24,9 +25,9 @@ class HoneyPokeWatcher(threading.Thread):
     def is_incoming(self, packet):
         try:
             if IP in packet:
-                for addr in self._addresses:
-                    if str(packet[IP].dst) == addr and str(packet[IP].src) not in self._ignore_list:
-                        return True
+                if str(packet[IP].dst) in self._addresses and str(packet[IP].src) not in self._ignore_addr:
+                    return True
+                    
         except:
             pass
             
@@ -34,7 +35,7 @@ class HoneyPokeWatcher(threading.Thread):
 
     def check_port(self, packet):
         if self.is_incoming(packet):
-            if TCP in packet:
+            if TCP in packet and packet[TCP].dport != self._ssh_port:
                 self._check_server(packet[TCP].dport, "tcp")
             elif UDP in packet:
                 self._check_server(packet[UDP].dport, "udp")
