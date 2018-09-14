@@ -30,7 +30,7 @@ HoneyPoke supports both Python2 and Python 3.
 
 1. Copy `config.json.default`  to `config.json` Modify the config file. 
     * `loggers` enables and disables loggers. This done with the `active` key under the respective loggers. Some may need extra configuation, which is in the `config` key.
-    * The `ports` key sets the listeners that you will be creating. Each sets the protocol (`tcp` or `udp`), and the port. `config.json.default` contains a curated list of ports. Modify as you want.
+    * The `ports` key sets the listeners that you will be creating. Each sets the protocol (`tcp` or `udp`), and the port. An optional settings is `ssl`, which wraps the socket with SSL. (NOTE: This means the socket will ignore non-SSL connections`config.json.default` contains a curated list of ports. Modify as you want.
     * `ignore_watch` is used ignore connections that you create to particular systems. This is useful for things like ElasticSearch so that these connections are not recorded as missing ports.
     * `ssh_port` is used ignore your SSH connections for missed port counts. Set this to the port SSH is listening on so that your 'missed' port count for your SSH server doesn't explode.
     * `user` is the user you want the script to drop privileges to.

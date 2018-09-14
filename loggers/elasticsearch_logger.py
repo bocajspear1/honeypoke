@@ -15,7 +15,7 @@ class ElasticSearchLogger(object):
         self.__verify_certs = config['verify']
 
     
-    def log(self, remote_ip, remote_port, protocol, port, data, is_binary):
+    def log(self, remote_ip, remote_port, protocol, port, data, is_binary, use_ssl):
         es = Elasticsearch(self.__server, use_ssl=self.__use_ssl, verify_certs=self.__verify_certs)
 
         
@@ -39,6 +39,7 @@ class ElasticSearchLogger(object):
             "port": port,
             "input": str(data),
             "is_binary": is_binary,
+            "use_ssl": use_ssl,
             "location": location,
             "host": platform.node()
         })

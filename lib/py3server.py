@@ -4,6 +4,7 @@ import sys
 import traceback
 import os
 import socket
+import ssl
 
 class TCPHandler(socketserver.StreamRequestHandler):
 
@@ -14,6 +15,10 @@ class TCPHandler(socketserver.StreamRequestHandler):
         port = self.server.server_address[1]
 
         try:
+
+            if self.server.use_ssl:
+                self.request.do_handshake()
+
             if os.geteuid() == 0 or os.getegid() == 0:
                 # print("Permissions not dropped")
                 return
@@ -37,6 +42,8 @@ class TCPHandler(socketserver.StreamRequestHandler):
         except socket.timeout:
             print("Timeout!")
             pass
+        except ssl.SSLError:
+            full_data = "--SSL Error--".encode("utf-8")
            
         decoded_data = ""
         try:
@@ -65,10 +72,11 @@ class UDPHandler(socketserver.BaseRequestHandler):
 
 class Py3HoneyPokeServer(HoneyPokeServer):
 
-    def __init__(self, port, protocol, loggers, queue):
+    def __init__(self, port, protocol, use_ssl, loggers, queue):
         super(Py3HoneyPokeServer, self).__init__(port, protocol, queue)
         self._server = None
         self._loggers = loggers
+        self._use_ssl = use_ssl
 
     def stop(self):
         if self._server != None:
@@ -77,9 +85,18 @@ class Py3HoneyPokeServer(HoneyPokeServer):
     def run(self):
         if self._protocol == "tcp":
             try:
-                self._server = socketserver.TCPServer(('', self._port), TCPHandler)
+                self._server = socketserver.ThreadingTCPServer(('', self._port), TCPHandler)
+                if self._use_ssl:
+                    self._server.socket = ssl.wrap_socket(
+                        self._server.socket, 
+                        keyfile="honeypoke_key.pem", 
+                        certfile="honeypoke_cert.pem", 
+                        do_handshake_on_connect=False, 
+                        cert_reqs=ssl.CERT_NONE
+                    )
                 self._server.allow_reuse_address = True
                 self._server.on_handle = self.on_handle
+                self._server.use_ssl = self._use_ssl
                 self._server.server_activate()
                 self.ready()
                 while os.geteuid() == 0 or os.getegid() == 0:
@@ -90,7 +107,7 @@ class Py3HoneyPokeServer(HoneyPokeServer):
                 print("!- Error at starting TCP thread for port " + str(self._port) + ", Error: " + str(e))
         elif self._protocol == "udp":
             try:
-                self._server = socketserver.UDPServer(('', self._port), UDPHandler)
+                self._server = socketserver.ThreadingUDPServer(('', self._port), UDPHandler)
                 self._server.allow_reuse_address = True
                 self._server.on_handle = self.on_handle
                 self._server.server_activate()
@@ -106,14 +123,15 @@ class Py3HoneyPokeServer(HoneyPokeServer):
             
     def on_handle(self, client_ip, data, is_binary):
 
+        print(is_binary, data)
         if is_binary:
             data = repr(bytes(data))
 
         if len(data) > 512:
-            large_file = self.save_large(self._protocol, self._port, data)
+            large_file = self.save_large(self._protocol, self._port, data.encode('utf-8'))
             data = "Output saved at " + large_file
             print(data)
 
         for logger in self._loggers:
-            logger.log(client_ip[0], client_ip[1], self._protocol, self._port, data, is_binary)
+            logger.log(client_ip[0], client_ip[1], self._protocol, self._port, data, is_binary, self._use_ssl)
         # self.write_input(client_ip[0], client_ip[1], data)

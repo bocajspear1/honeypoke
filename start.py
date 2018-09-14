@@ -104,8 +104,8 @@ class ServerManager(object):
             self._udp_ports.append(port)
         self._lock.release()
 
-    def add_server(self, port, protocol, loggers, queue):
-        server = PyHoneyPokeServer(port, protocol, loggers, queue)
+    def add_server(self, port, protocol, use_ssl, loggers, queue):
+        server = PyHoneyPokeServer(port, protocol, use_ssl, loggers, queue)
         self.add_port(port, protocol)
         server.start()
         self._servers.append(server)
@@ -121,9 +121,19 @@ class ServerManager(object):
         print("Starting " + str(server_count) + " servers\n")
         wait = Queue(maxsize=server_count)
 
+
+        checked_certs = False
         # Add servers
         for port in self._config['ports']:
-            self.add_server(int(port['port']), port['protocol'], self.__loggers, wait)
+            use_ssl = False
+            if 'ssl' in port and port['ssl'] is True:
+                use_ssl = True
+                if not checked_certs:
+                    if not os.path.exists("honeypoke_key.pem") or not os.path.exists("honeypoke_cert.pem"):
+                        print("SSL enabled, but PEM files not found!")
+                        sys.exit(0)
+                    checked_certs = True
+            self.add_server(int(port['port']), port['protocol'], use_ssl, self.__loggers, wait)
 
         # Wait until they indicate they have bound
         while not wait.full():
