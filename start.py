@@ -69,7 +69,12 @@ class ServerManager(object):
 
             self._miss_lock.acquire()
 
-            output_file = open("./logs/missed.json", "a+")
+            missed_log_path = "./logs/missed.json"
+        
+            if not os.path.exists(missed_log_path):
+                open(missed_log_path, 'a').close()
+
+            output_file = open(missed_log_path, "r+")
             missed = output_file.read()
             
             try:
@@ -81,13 +86,14 @@ class ServerManager(object):
                     }
                 else:
                     missed_obj = json.loads(missed)
+
                 
                 if str_port not in missed_obj[protocol]:
                     missed_obj[protocol][str_port] = 0
 
                 missed_obj[protocol][str_port] += 1
 
-                output_file.truncate(0)
+                output_file.seek(0)
                 output_file.write(json.dumps(missed_obj, indent=4, sort_keys=True))
                 output_file.close()
                 
