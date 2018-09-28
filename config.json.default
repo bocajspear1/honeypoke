@@ -81,6 +81,7 @@
     ],
     "ignore_watch": [
     ],
+    "ssh_port": 22,
     "user": "nobody",
     "group": "nogroup"
 }
