@@ -123,7 +123,6 @@ class Py3HoneyPokeServer(HoneyPokeServer):
             
     def on_handle(self, client_ip, data, is_binary):
 
-        print(is_binary, data)
         if is_binary:
             data = repr(bytes(data))
 

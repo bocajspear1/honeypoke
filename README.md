@@ -12,6 +12,10 @@ This information can be logged to different places, the currently supported outp
 
 HoneyPoke supports both Python2 and Python 3.
 
+## Quick Start
+
+__A full tutorial on installing HoneyPoke and using it with ElasticSeach and Kibana is available in the [wiki](https://github.com/bocajspear1/honeypoke/wiki/Full-Install-(With-ElasticSearch-Kibana)).__
+
 ## Pre-Reqs
 
 * You'll need the dev packages for your version of Python, as well as the libpcap dev libraries (`libpcap-dev`).
